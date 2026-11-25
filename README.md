@@ -9,7 +9,7 @@ Entry for the make.fun bounty: [Make the best cooking game](https://make.fun/bou
 ## The game
 
 **Warung Rush** — the busiest street-food stall in town. Orders land on the
-board (nasi goreng, mie ayam, sate ayam, es teh); you grab ingredients from
+board (fried rice, chicken noodles, chicken satay, iced tea); you grab ingredients from
 the crates, work them at the right station — wok, grill, chopping board,
 kettle — then feed the finished components to the waiting tickets and serve
 before the customer walks out angry.

@@ -27,12 +27,12 @@ export const LAYOUT = {
 };
 
 const CUSTOMER_LOOKS = [
-  { skin: '#f2c89b', shirt: '#e74c3c', hair: '#2c1a0e', name: 'Bu Tini' },
-  { skin: '#e8b88a', shirt: '#3498db', hair: '#111111', name: 'Pak Budi' },
-  { skin: '#d9a06b', shirt: '#27ae60', hair: '#4a2c14', name: 'Mbak Sari' },
-  { skin: '#f5d0a9', shirt: '#f39c12', hair: '#6e3f16', name: 'Mas Joko' },
-  { skin: '#c98d5f', shirt: '#8e44ad', hair: '#1a1a1a', name: 'Kak Rina' },
-  { skin: '#eec39a', shirt: '#16a085', hair: '#3a2a18', name: 'Om Dedi' },
+  { skin: '#f2c89b', shirt: '#e74c3c', hair: '#2c1a0e', name: 'Mrs. Tini' },
+  { skin: '#e8b88a', shirt: '#3498db', hair: '#111111', name: 'Mr. Budi' },
+  { skin: '#d9a06b', shirt: '#27ae60', hair: '#4a2c14', name: 'Miss Sari' },
+  { skin: '#f5d0a9', shirt: '#f39c12', hair: '#6e3f16', name: 'Mr. Joko' },
+  { skin: '#c98d5f', shirt: '#8e44ad', hair: '#1a1a1a', name: 'Miss Rina' },
+  { skin: '#eec39a', shirt: '#16a085', hair: '#3a2a18', name: 'Mr. Dedi' },
 ];
 
 export class WarungGame {
@@ -80,8 +80,8 @@ export class WarungGame {
     this.shift = n;
     this.shiftTime = SHIFT_LEN;
     this.spawnTimer = 2.5;
-    const names = ['', 'SHIFT 1 — MAKAN SIANG', 'SHIFT 2 — SORE', 'SHIFT 3 — JAM MAKAN MALAM!'];
-    this.banner = { text: names[n] || `SHIFT ${n}`, sub: n === 3 ? 'Rush hour! Pesanan datang lebih cepat' : 'Pesanan baru masuk...', t: 2.4 };
+    const names = ['', 'SHIFT 1 — LUNCH', 'SHIFT 2 — AFTERNOON', 'SHIFT 3 — DINNER RUSH!'];
+    this.banner = { text: names[n] || `SHIFT ${n}`, sub: n === 3 ? 'Rush hour! Orders come in faster' : 'New orders coming in...', t: 2.4 };
     if (n === 3) this.sound.rush();
   }
 
@@ -120,7 +120,7 @@ export class WarungGame {
     if (st.job) {
       if (st.job.done) {
         // Collect the finished component onto the ready shelf.
-        if (this.shelf.length >= 8) { this.sound.error(); this.shake = 0.2; this.floater(stationCenter(stationId).x, stationCenter(stationId).y - 60, 'RAK PENUH!', '#e74c3c'); return; }
+        if (this.shelf.length >= 8) { this.sound.error(); this.shake = 0.2; this.floater(stationCenter(stationId).x, stationCenter(stationId).y - 60, 'SHELF FULL!', '#e74c3c'); return; }
         this.shelf.push(st.job.ing);
         st.job = null;
         this.sound.drop();
@@ -166,7 +166,7 @@ export class WarungGame {
     this.passPlates.push(ticket);
     this.sound.ready();
     const c = stationCenter('pass');
-    this.floater(c.x, c.y - 40, 'SIAP DISAJIKAN!', '#2ecc71');
+    this.floater(c.x, c.y - 40, 'READY TO SERVE!', '#2ecc71');
   }
 
   serveTicket(ticket) {
@@ -179,7 +179,7 @@ export class WarungGame {
     this.cash += earned;
     this.served += 1;
     const c = stationCenter('pass');
-    this.floater(c.x, c.y - 60, `+Rp${earned}${this.combo > 1 ? '  x' + this.combo : ''}`, '#f7c948');
+    this.floater(c.x, c.y - 60, `+$${earned}${this.combo > 1 ? '  x' + this.combo : ''}`, '#f7c948');
     this.burst(c.x, c.y, '#f7c948', 14);
     this.sound.serve();
     setTimeout(() => this.sound.coin(), 120);
@@ -201,7 +201,7 @@ export class WarungGame {
     if (this.shiftTime <= 0) {
       if (this.shift < 3) {
         this.phase = PHASE.SHIFT_END;
-        this.banner = { text: `SHIFT ${this.shift} SELESAI`, sub: `Kas: Rp${this.cash} · ${this.served} piring tersaji`, t: 2.6 };
+        this.banner = { text: `SHIFT ${this.shift} DONE`, sub: `Cash: $${this.cash} · ${this.served} plates served`, t: 2.6 };
         setTimeout(() => { if (this.phase === PHASE.SHIFT_END) { this.phase = PHASE.PLAYING; this.startShift(this.shift + 1); } }, 2600);
       } else {
         this.phase = PHASE.OVER;
@@ -227,7 +227,7 @@ export class WarungGame {
         this.missed += 1;
         this.combo = 0;
         this.sound.angry();
-        this.floater(360, 120, `${t.look.name} pergi!`, '#e74c3c');
+        this.floater(360, 120, `${t.look.name} left!`, '#e74c3c');
       }
     }
 
@@ -251,7 +251,7 @@ export class WarungGame {
             st.burnt = true;
             st.burnLeft = 4;
             this.sound.burn();
-            this.floater(stationCenter(key).x, stationCenter(key).y - 60, 'GOSONG!', '#e74c3c');
+            this.floater(stationCenter(key).x, stationCenter(key).y - 60, 'BURNT!', '#e74c3c');
           }
         }
       } else if (st.burnt) {
