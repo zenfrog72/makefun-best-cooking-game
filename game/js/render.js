@@ -424,34 +424,111 @@ function drawPot(ctx, game, r, t) {
 function drawPass(ctx, game, r, t) {
   stationBase(ctx, r, '🍽️ SERVING WINDOW', '#2e8b57');
   const cx = r.x + r.w / 2;
-  // serving window
+  // serving window — taller, so the finished plates get room to shine
   ctx.fillStyle = '#f5e6c4';
-  rr(ctx, r.x + 12, r.y + 44, r.w - 24, 130, 8); ctx.fill();
+  rr(ctx, r.x + 12, r.y + 40, r.w - 24, 158, 8); ctx.fill();
   ctx.strokeStyle = '#8a6d3b'; ctx.lineWidth = 3;
-  rr(ctx, r.x + 12, r.y + 44, r.w - 24, 130, 8); ctx.stroke();
+  rr(ctx, r.x + 12, r.y + 40, r.w - 24, 158, 8); ctx.stroke();
   if (game.passPlates.length === 0) {
-    text(ctx, 'Ready plates', cx, r.y + 100, 14, '#8a6d3b', 'center', 'normal', 'italic');
-    text(ctx, 'will appear here', cx, r.y + 122, 14, '#8a6d3b', 'center', 'normal', 'italic');
+    text(ctx, 'Ready plates', cx, r.y + 108, 14, '#8a6d3b', 'center', 'normal', 'italic');
+    text(ctx, 'will appear here', cx, r.y + 130, 14, '#8a6d3b', 'center', 'normal', 'italic');
   } else {
+    const n = game.passPlates.length;
+    const cols = n > 2 ? 2 : n;
+    const rows = Math.ceil(n / cols);
+    // One plate gets the hero treatment; a full window still fits.
+    const rx = n === 1 ? 54 : n === 2 ? 44 : 38;
+    const ry = n === 1 ? 34 : n === 2 ? 28 : 24;
+    const colW = (r.w - 24) / cols;
+    const rowH = 158 / rows;
     game.passPlates.forEach((ticket, i) => {
-      const px = r.x + 40 + i * 84;
-      const py = r.y + 108;
+      const col = i % cols, row = Math.floor(i / cols);
+      const px = r.x + 12 + colW * (col + 0.5);
+      const py = r.y + 40 + rowH * (row + 0.5) + 4;
+      // warm gold glow behind the finished plate
+      const glow = ctx.createRadialGradient(px, py, 6, px, py, rx + 24);
+      glow.addColorStop(0, 'rgba(247,201,72,0.6)');
+      glow.addColorStop(1, 'rgba(247,201,72,0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath(); ctx.arc(px, py, rx + 24, 0, Math.PI * 2); ctx.fill();
+      // steam rising off the hot food
+      drawSteam(ctx, px, py - ry - (rows === 1 ? 14 : 6), t + i * 1.3);
+      // plate — bigger, with a gold rim
       ctx.fillStyle = '#fff';
-      ctx.beginPath(); ctx.ellipse(px, py, 34, 24, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = '#c9a86a'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.ellipse(px, py, 34, 24, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(px, py, rx, ry, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#f7c948'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.ellipse(px, py, rx, ry, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = '#c9a86a'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.ellipse(px, py, rx - 8, ry - 7, 0, 0, Math.PI * 2); ctx.stroke();
       // dish art on the plate
+      const m = ticket.recipe.needs.length;
+      const size = Math.min(34, rx * 0.7);
+      const gap = m > 1 ? Math.min(24, (rx * 2 - 24) / (m - 1)) : 0;
       ticket.recipe.needs.forEach((need, j) => {
-        drawIngredient(ctx, need, px - 16 + j * 16, py - 2, 26, true);
+        const ix = px + (j - (m - 1) / 2) * gap;
+        drawIngredient(ctx, need, ix, py - 2, size, true);
       });
+      // garnish: chili slices, greens, fried shallots on top
+      drawGarnish(ctx, px, py, rx, i);
+      if (rows === 1) {
+        // '✓ READY' tag pinned on the plate's top rim
+        ctx.fillStyle = '#b7791f';
+        rr(ctx, px - 31, py - ry - 14, 62, 18, 9); ctx.fill();
+        ctx.strokeStyle = '#f7c948'; ctx.lineWidth = 1.5;
+        rr(ctx, px - 31, py - ry - 14, 62, 18, 9); ctx.stroke();
+        text(ctx, '✓ READY', px, py - ry - 5, 11, '#fff', 'center');
+      } else {
+        // compact gold check badge on the rim when the window is full
+        ctx.fillStyle = '#b7791f';
+        ctx.beginPath(); ctx.arc(px + rx - 4, py - ry + 8, 11, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#f7c948'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(px + rx - 4, py - ry + 8, 11, 0, Math.PI * 2); ctx.stroke();
+        text(ctx, '✓', px + rx - 4, py - ry + 9, 12, '#fff', 'center');
+      }
       const pulse = 0.6 + Math.sin(t * 6 + i) * 0.4;
       ctx.fillStyle = `rgba(46,204,113,${pulse})`;
-      rr(ctx, px - 34, py + 26, 68, 20, 10); ctx.fill();
-      text(ctx, 'SERVE!', px, py + 36, 11, '#fff', 'center');
+      rr(ctx, px - 34, py + ry + 6, 68, 20, 10); ctx.fill();
+      text(ctx, 'SERVE!', px, py + ry + 16, 11, '#fff', 'center');
     });
   }
   text(ctx, 'Click a plate / ticket to serve', cx, r.y + 210, 12, '#d8cbb0', 'center', 'normal');
   text(ctx, 'Finished orders → plates appear here', cx, r.y + 228, 11, '#a89a7a', 'center', 'normal');
+}
+
+// Garnish sprinkled over a finished dish: red chili slices, green flecks
+// and golden fried shallots — the little details that sell the plate.
+function drawGarnish(ctx, px, py, rx, seed) {
+  const u = rx / 54;
+  const jitter = seed % 2 === 0 ? 1 : -1;
+  const marks = [
+    { dx: -0.42, dy: -0.18, kind: 'chili' },
+    { dx: 0.12, dy: 0.26, kind: 'shallot' },
+    { dx: 0.48, dy: -0.06, kind: 'greens' },
+    { dx: -0.06, dy: -0.34, kind: 'shallot' },
+    { dx: 0.32, dy: 0.3, kind: 'chili' },
+  ];
+  ctx.save();
+  for (const m of marks) {
+    const x = px + m.dx * rx + jitter * 2;
+    const y = py + m.dy * rx * 0.6;
+    if (m.kind === 'chili') {
+      ctx.strokeStyle = '#e23b2e'; ctx.lineWidth = 2.5 * u;
+      ctx.beginPath(); ctx.arc(x, y, 4.5 * u, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = '#ff8a7a';
+      ctx.beginPath(); ctx.arc(x, y, 2 * u, 0, Math.PI * 2); ctx.fill();
+    } else if (m.kind === 'greens') {
+      ctx.fillStyle = '#4da34d';
+      ctx.beginPath(); ctx.ellipse(x, y, 5 * u, 3 * u, 0.6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#7cc47c';
+      ctx.beginPath(); ctx.ellipse(x - 1, y - 1, 2 * u, 1.2 * u, 0.6, 0, Math.PI * 2); ctx.fill();
+    } else {
+      ctx.fillStyle = '#d99a3d';
+      ctx.beginPath(); ctx.arc(x, y, 2.6 * u, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#f0c060';
+      ctx.beginPath(); ctx.arc(x - 0.8, y - 0.8, 1.2 * u, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+  ctx.restore();
 }
 
 function drawSmoke(ctx, x, y, t) {
